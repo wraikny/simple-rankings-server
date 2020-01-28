@@ -93,10 +93,7 @@ module Endpoint =
 
 let app config connStr =
   choose [
-    GET >=> choose [
-      path "/hello" >=> OK "Hello!!"
-      Endpoint.select config connStr
-    ]
+    GET >=> Endpoint.select config connStr
     POST >=> Endpoint.insert config connStr
   ]
 
