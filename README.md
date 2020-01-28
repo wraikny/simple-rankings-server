@@ -28,6 +28,16 @@ Template for F# project, distributed under [MIT License](/LICENSE)
 |AppVeyor|[![](https://ci.appveyor.com/api/projects/status/5vtyb8v9twdpteb6?svg=true)](https://ci.appveyor.com/project/wraikny/simple-rankings-server)|
 --->
 
+## Benefical URLs
+- https://suave.io
+- https://suave.io/restful.html
+- https://blog.recyclebin.jp/archives/4495
+- https://qiita.com/masato44gm/items/dffb8281536ad321fb08
+- https://github.com/SuaveIO/suave/blob/master/examples/Example/Program.fs
+- http://pocketberserker.hatenablog.com/entry/2017/02/15/184210
+- https://www.nekoni.net/Blog/Article/nekonidotnet-admin-development-part6-first-part
+
+
 <!---
 comment out in Markdown.
 --->
