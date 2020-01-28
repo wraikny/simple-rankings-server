@@ -1,4 +1,6 @@
 FSharp.Core
-
-group Server
-    Suave
+Suave
+FSharp.Json
+System.Data.SQLite
+Dapper
+FSharp.Interop.Dynamic

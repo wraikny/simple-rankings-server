@@ -3,12 +3,11 @@ version 5.226.0
 source https://www.nuget.org/api/v2
 
 nuget FSharp.Core
-nuget Expecto
-nuget Expecto.FsCheck
-
-group Server
-    source https://www.nuget.org/api/v2
-    nuget Suave
+nuget Suave
+nuget FSharp.Json
+nuget Dapper
+nuget System.Data.SQLite
+nuget FSharp.Interop.Dynamic
 
 // [ FAKE GROUP ]
 group Build
