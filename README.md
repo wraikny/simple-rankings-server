@@ -1,4 +1,6 @@
-# FsTemplate
+# mini-rankings-server
+
+<!--- 
 Template for F# project, distributed under [MIT License](/LICENSE)
 
 ## Usage
@@ -9,24 +11,28 @@ Template for F# project, distributed under [MIT License](/LICENSE)
     ```
 
 3. Change **CI Badge** in **[README.md](/README.md)**
-    - Replace `wraikny/FsTemplate` to `<OWNER>/<REPOSITORY>`
+    - Replace `wraikny/mini-rankings-server` to `<OWNER>/<REPOSITORY>`
     - Set your own AppVeyor badge ID
     - **If you don't use a CI service, comment out it from the below table**.
 
 
 4. Create project: **[Create Project](#Create-Project)**
+--->
 
 ## CI Status
 |||
 :---|:---
-|Github Actions|[![](https://github.com/wraikny/FsTemplate/workflows/CI/badge.svg)](https://github.com/wraikny/FsTemplate/actions?workflow=CI)|
-|Travis CI|[![](https://travis-ci.org/wraikny/FsTemplate.svg?branch=master)](https://travis-ci.org/wraikny/FsTemplate)|
-|AppVeyor|[![](https://ci.appveyor.com/api/projects/status/5vtyb8v9twdpteb6?svg=true)](https://ci.appveyor.com/project/wraikny/FsTemplate)|
+|Github Actions|[![](https://github.com/wraikny/mini-rankings-server/workflows/CI/badge.svg)](https://github.com/wraikny/mini-rankings-server/actions?workflow=CI)|
+<!---
+|Travis CI|[![](https://travis-ci.org/wraikny/mini-rankings-server.svg?branch=master)](https://travis-ci.org/wraikny/mini-rankings-server)|
+|AppVeyor|[![](https://ci.appveyor.com/api/projects/status/5vtyb8v9twdpteb6?svg=true)](https://ci.appveyor.com/project/wraikny/mini-rankings-server)|
+--->
 
 <!---
 comment out in Markdown.
 --->
 
+<!-- 
 ## Requirements
 .NET Core 3.0  
 https://dotnet.microsoft.com/download  
@@ -113,4 +119,4 @@ and then, commit [.config/dotnet-tools.json](/.config/dotnet-tools.json).
 
 ## Link
 - [Paket（.NETのパッケージマネージャー）とFAKE（F#のMake）について - anti scroll](https://tategakibunko.hatenablog.com/entry/2019/07/09/123655)
-- [.NET Core 3.0 の新機能 #ローカルツール - Microsoft Docs](https://docs.microsoft.com/ja-jp/dotnet/core/whats-new/dotnet-core-3-0#local-tools)
+- [.NET Core 3.0 の新機能 #ローカルツール - Microsoft Docs](https://docs.microsoft.com/ja-jp/dotnet/core/whats-new/dotnet-core-3-0#local-tools) -->

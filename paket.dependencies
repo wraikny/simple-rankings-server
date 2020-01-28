@@ -6,6 +6,10 @@ nuget FSharp.Core
 nuget Expecto
 nuget Expecto.FsCheck
 
+group Server
+    source https://www.nuget.org/api/v2
+    nuget Suave
+
 // [ FAKE GROUP ]
 group Build
     storage none

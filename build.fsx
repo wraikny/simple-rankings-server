@@ -12,7 +12,7 @@ open Fake.IO.Globbing.Operators
 open Fake.Core.TargetOperators
 
 let testProjects = [
-  "SampleTest"
+  // "SampleTest"
   // "NewTestProject"
   // (F# list is separated '\n' or ';', not ',')
 ]
