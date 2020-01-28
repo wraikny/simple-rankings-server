@@ -30,7 +30,7 @@ namespace CSharp
             var userId = Guid.NewGuid();
 
             var sample = new Sample1 { Score1 = 118, Score2 = 204.6, Name = "kitsune" };
-            var result = Client.Insert(Url, userId.ToString(), sample).Result;
+            var result = Client.Insert(Url, userId, sample).Result;
 
             Console.WriteLine(result);
 
