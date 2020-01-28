@@ -1,0 +1,6 @@
+
+language: csharp
+dotnet: 3.0.100
+script:
+  - ./build.sh
+  - dotnet fake build -t Test
