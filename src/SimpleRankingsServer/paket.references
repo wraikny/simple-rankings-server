@@ -1,3 +1,5 @@
 FSharp.Core
 Suave
 FSharp.Json
+System.Data.SQLite
+Dapper

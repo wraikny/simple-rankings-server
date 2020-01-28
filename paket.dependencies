@@ -5,6 +5,9 @@ source https://www.nuget.org/api/v2
 nuget FSharp.Core
 nuget Suave
 nuget FSharp.Json
+nuget Dapper
+nuget System.Data.SQLite
+nuget FSharp.Interop.Dynamic
 
 // [ FAKE GROUP ]
 group Build
