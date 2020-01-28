@@ -78,7 +78,8 @@ module Endpoint =
             |> Seq.toArray
             |> function
             | [||] ->
-              let id = Database.insert connStr table tableMap param
+              let date = DateTime.UtcNow
+              let id = Database.insert connStr table tableMap date param
 
               { InsertResult.id = id }
             | xs ->

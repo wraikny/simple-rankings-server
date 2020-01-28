@@ -28,14 +28,17 @@ let IdKey = "Id"
 [<Literal>]
 let UserIdKey = "UserId"
 
+[<Literal>]
+let UTCDateKey = "UTCDate"
+
 let createTables connStr (tables: Map<string, Map<string, Model.TableType>>) =
   let createSql (table: string) (keys: seq<string * Model.TableType>) =
     let sb = 
       StringBuilder()
         .Append(
           sprintf
-            "create table if not exists [%s] ([%s] integer primary key autoincrement, [%s] text not null"
-            table IdKey UserIdKey
+            "create table if not exists [%s] ([%s] integer primary key autoincrement, [%s] text not null, [%s] text not null"
+            table IdKey UserIdKey UTCDateKey
         )
 
     for (key, ty) in keys do
@@ -60,7 +63,7 @@ open System.Collections.Concurrent
 
 let private insertTableMapMemo = ConcurrentDictionary<string, string[] * string>()
 
-let insert connStr table (tableMap : Map<string, Model.TableType>) (data: Model.Insert) : int64 =
+let insert connStr table (tableMap : Map<string, Model.TableType>) (utcDate: DateTime) (data: Model.Insert) : int64 =
   let keys, sql =
     insertTableMapMemo.TryGetValue table |> function
     | true, x -> x
@@ -68,9 +71,9 @@ let insert connStr table (tableMap : Map<string, Model.TableType>) (data: Model.
       let keys = [| for (k, _) in tableMap |> Map.toSeq -> k |]
 
       let sql =
-        sprintf "insert into %s(%s, %s) values(@%s, %s)" table
-          UserIdKey (keys |> String.concat ", ")
-          UserIdKey (keys |> Seq.map(sprintf "@%s") |> String.concat ", ")
+        sprintf "insert into %s(%s, %s, %s) values(@%s, @%s, %s)" table
+          UserIdKey UTCDateKey (keys |> String.concat ", ")
+          UserIdKey UTCDateKey (keys |> Seq.map(sprintf "@%s") |> String.concat ", ")
 
       insertTableMapMemo.TryAdd(table, (keys, sql)) |> ignore
 
@@ -78,6 +81,7 @@ let insert connStr table (tableMap : Map<string, Model.TableType>) (data: Model.
 
   let param = DynamicParameters()
   param.Add(UserIdKey, data.userId)
+  param.Add(UTCDateKey, utcDate.ToString "yyyy/MM/dd HH:mm:ss")
 
   for k in keys do
     param.Add(k, data.values |> Map.find k)
@@ -132,8 +136,9 @@ let select connStr (tableMap: Map<string, Model.TableType>) (data: Model.Select)
 
     [|for x in xs ->
         {
-          id = x?Id
-          userId = x?UserId
+          id = x?(IdKey)
+          userId = x?(UserIdKey)
+          utcDate = x?(UTCDateKey)
           values =
             tableMap
             |> Map.map(fun key _ -> x?(key))

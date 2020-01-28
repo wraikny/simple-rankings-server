@@ -8,10 +8,22 @@ module SimpleRankingsServer =
   open System.ComponentModel
   open FSharp.Json
 
+  type DateTimeString() =
+    interface ITypeTransform with
+      member x.targetType() = (fun _ -> typeof<string>) ()
+      member x.toTargetType value = (fun (v: obj) ->
+        (v :?> DateTime).ToString "yyyy/MM/dd HH:mm:ss" :> obj) value
+      
+      member x.fromTargetType value = (fun (v: obj) ->
+        DateTime.ParseExact(v:?> string, "yyyy/MM/dd HH:mm:ss", null) :> obj) value
+
   type Data<'a> = {
     id : int64
     userId : Guid
     values : 'a
+
+    [<JsonField(Transform=typeof<DateTimeString>)>]
+    utcDate : DateTime
   }
 
   #if !DEBUG

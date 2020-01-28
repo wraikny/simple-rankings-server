@@ -34,7 +34,7 @@ namespace CSharp
 
             Console.WriteLine(result);
 
-            var data = Client.Select<Sample1>(Url, orderBy: "Id", limit: 5).Result;
+            var data = Client.Select<Sample1>(Url, orderBy: "Id", limit: 2).Result;
             foreach (var x in data)
             {
                 Console.WriteLine(x);
