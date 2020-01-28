@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
+using System.Globalization;
 
 namespace SimpleRankingsServer
 {
@@ -17,6 +18,9 @@ namespace SimpleRankingsServer
 
         [DataMember(Name = "userId")]
         internal string UserIdStr { get; set; }
+
+        [DataMember(Name = "utcDate")]
+        internal string UTCDateStr { get; set; }
 
         [DataMember(Name = "values")]
         public T Values { get; internal set; }
@@ -32,15 +36,27 @@ namespace SimpleRankingsServer
             }
         }
 
+        private DateTime utcDate;
+        public DateTime UTCDate
+        {
+            get => utcDate;
+            set
+            {
+                utcDate = value;
+                UTCDateStr = value.ToString("yyyy/MM/dd/HH/mm/ss");
+            }
+        }
+
         public override string ToString()
         {
-            return $"{{ \"id\" : {Id}, \"userId\" : {UserId}, \"values\" : {Values.ToString()} }}";
+            return $"{{ \"id\" : {Id}, \"userId\" : {UserIdStr}, \"utcDate\" : {UTCDateStr}, \"values\" : {Values.ToString()} }}";
         }
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext s)
         {
             userId = Guid.Parse(UserIdStr);
+            utcDate = DateTime.ParseExact(UTCDateStr, "yyyy/MM/dd HH:mm:ss", null);
         }
     }
 

@@ -37,10 +37,9 @@ module Endpoint =
           orderBy |> function
           | ValueSome s
             when s <> Database.IdKey
-            && s <> Database.UserIdKey
-            && not <| tableMap.ContainsKey s ->
+            && let t = Map.tryFind s tableMap in t = Some Int || t = Some Float ->
 
-            sprintf "'%s' is invalid key" s
+            sprintf "orderBy '%s' is invalid key" s
             |> BAD_REQUEST
           | _ ->
             { table = table
@@ -78,7 +77,8 @@ module Endpoint =
             |> Seq.toArray
             |> function
             | [||] ->
-              let id = Database.insert connStr table tableMap param
+              let date = DateTime.UtcNow
+              let id = Database.insert connStr table tableMap date param
 
               { InsertResult.id = id }
             | xs ->

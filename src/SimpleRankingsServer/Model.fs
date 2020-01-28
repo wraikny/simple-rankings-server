@@ -25,6 +25,7 @@ type Config = {
 type Record = {
   id : int64
   userId : string
+  utcDate : string
   values : Map<string, obj>
 }
 
