@@ -1,4 +1,4 @@
-# mini-rankings-server
+# simple-rankings-server
 
 <!--- 
 Template for F# project, distributed under [MIT License](/LICENSE)
@@ -11,7 +11,7 @@ Template for F# project, distributed under [MIT License](/LICENSE)
     ```
 
 3. Change **CI Badge** in **[README.md](/README.md)**
-    - Replace `wraikny/mini-rankings-server` to `<OWNER>/<REPOSITORY>`
+    - Replace `wraikny/simple-rankings-server` to `<OWNER>/<REPOSITORY>`
     - Set your own AppVeyor badge ID
     - **If you don't use a CI service, comment out it from the below table**.
 
@@ -22,10 +22,10 @@ Template for F# project, distributed under [MIT License](/LICENSE)
 ## CI Status
 |||
 :---|:---
-|Github Actions|[![](https://github.com/wraikny/mini-rankings-server/workflows/CI/badge.svg)](https://github.com/wraikny/mini-rankings-server/actions?workflow=CI)|
+|Github Actions|[![](https://github.com/wraikny/simple-rankings-server/workflows/CI/badge.svg)](https://github.com/wraikny/simple-rankings-server/actions?workflow=CI)|
 <!---
-|Travis CI|[![](https://travis-ci.org/wraikny/mini-rankings-server.svg?branch=master)](https://travis-ci.org/wraikny/mini-rankings-server)|
-|AppVeyor|[![](https://ci.appveyor.com/api/projects/status/5vtyb8v9twdpteb6?svg=true)](https://ci.appveyor.com/project/wraikny/mini-rankings-server)|
+|Travis CI|[![](https://travis-ci.org/wraikny/simple-rankings-server.svg?branch=master)](https://travis-ci.org/wraikny/simple-rankings-server)|
+|AppVeyor|[![](https://ci.appveyor.com/api/projects/status/5vtyb8v9twdpteb6?svg=true)](https://ci.appveyor.com/project/wraikny/simple-rankings-server)|
 --->
 
 <!---
