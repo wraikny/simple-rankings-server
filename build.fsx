@@ -11,11 +11,11 @@ open Fake.IO.FileSystemOperators
 open Fake.IO.Globbing.Operators
 open Fake.Core.TargetOperators
 
-let testProjects = [
+let testProjects = []
   // "SampleTest"
   // "NewTestProject"
   // (F# list is separated '\n' or ';', not ',')
-]
+// ]
 
 Target.create "Test" (fun _ ->
   [ for x in testProjects ->
@@ -33,12 +33,15 @@ Target.create "Clean" (fun _ ->
   ++ "src/**/obj"
   ++ "tests/**/bin"
   ++ "tests/**/obj"
+  ++ "sample/**/bin"
+  ++ "sample/**/obj"
   |> Shell.cleanDirs
 )
 
 Target.create "Build" (fun _ ->
   !! "src/**/*.*proj"
   ++ "tests/**/*.*proj"
+  ++ "sample/**/*.*proj"
   |> Seq.iter (DotNet.build id)
 )
 

@@ -13,15 +13,34 @@ namespace SimpleRankingsServer
     public class Data<T>
     {
         [DataMember(Name = "id")]
-        public long Id { get; set; }
+        public long Id { get; internal set; }
+
         [DataMember(Name = "userId")]
-        public string UserId { get; set; }
+        internal string UserIdStr { get; set; }
+
         [DataMember(Name = "values")]
-        public T Values { get; set; }
+        public T Values { get; internal set; }
+
+        private Guid userId;
+        public Guid UserId
+        {
+            get => userId;
+            set
+            {
+                userId = value;
+                UserIdStr = value.ToString();
+            }
+        }
 
         public override string ToString()
         {
             return $"{{ \"id\" : {Id}, \"userId\" : {UserId}, \"values\" : {Values.ToString()} }}";
+        }
+
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext s)
+        {
+            userId = Guid.Parse(UserIdStr);
         }
     }
 
@@ -55,9 +74,20 @@ namespace SimpleRankingsServer
         private class InsertParam<T>
         {
             [DataMember(Name = "userId")]
-            public string UserId { get; set; }
+            public string UserIdStr { get; set; }
             [DataMember(Name = "values")]
             public T Values { get; set; }
+
+            private Guid userId;
+            public Guid UserId
+            {
+                get => userId;
+                set
+                {
+                    userId = value;
+                    UserIdStr = value.ToString();
+                }
+            }
         }
 
         [DataContract]
@@ -67,7 +97,7 @@ namespace SimpleRankingsServer
             public long Id { get; set; }
         }
 
-        public static async Task<long> Insert<T>(string url, string userId, T data)
+        public static async Task<long> Insert<T>(string url, Guid userId, T data)
         {
             var json = JsonUtils.Serialize(new InsertParam<T> { UserId = userId, Values = data });
             using (var content = new StringContent(json, Encoding.UTF8, @"application/json"))
