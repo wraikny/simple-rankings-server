@@ -18,7 +18,7 @@ type Model.Select with
   member this.ToSql(tableMap : Map<_,_>) =
     let orderBy =
       this.orderBy |> function
-      | ValueSome x when x = IdKey || x = UserIdKey || tableMap.ContainsKey x ->
+      | ValueSome x when x = IdKey || tableMap.ContainsKey x ->
           sprintf "order by %s %s" x
             (this.isDescending |> function | true -> "desc" | _ -> "asc")
       | _ -> ""
