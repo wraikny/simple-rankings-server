@@ -54,7 +54,8 @@ let createTables connStr (tables: Map<string, Map<string, Model.TableType>>) =
     for (table, keys) in Map.toSeq tables do
       let sql = createSql table (Map.toSeq keys)
       connection.Execute(sql, trans) |> ignore
-      trans.Commit()
+
+    trans.Commit()
   with _ ->
     trans.Rollback()
     reraise()
