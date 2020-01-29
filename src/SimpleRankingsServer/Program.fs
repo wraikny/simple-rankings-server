@@ -97,6 +97,25 @@ let app config connStr =
       ]
   ]
 
+open System.Net
+open System.Net.Sockets
+open Suave.Sockets
+
+let conf (port: uint16) =
+  let socketBinding : Sockets.SocketBinding =
+    let ip : Net.IPAddress =
+      Dns.GetHostName()
+      |>  Dns.GetHostAddresses
+      |> Seq.find(fun x -> x.AddressFamily = AddressFamily.InterNetwork)
+    { ip = ip; port = port }
+
+  let httpBinding : Http.HttpBinding =
+    { scheme = HTTP
+      socketBinding = socketBinding }
+
+  { defaultConfig with bindings = [ httpBinding ] }
+
+
 [<EntryPoint>]
 let main _ =
   let config = Config.Load @"config.json"
@@ -105,6 +124,6 @@ let main _ =
   Database.createTables connStr config.tables
 
   app config connStr
-  |> startWebServer defaultConfig
+  |> startWebServer (conf config.port)
 
   0
