@@ -47,14 +47,14 @@ let private createTableSql (table: string) (keys: seq<string * Model.TableType>)
   sb.Append(")").ToString()
 
 
-let createTables (connStr: string) (tables: Map<string, Map<string, Model.TableType>>) =
+let createTables (connStr: string) (tables: Map<string, Model.TableConfig>) =
   use connection = new SQLiteConnection(connStr)
   connection.Open()
   use trans = connection.BeginTransaction()
 
   try
-    for (table, keys) in Map.toSeq tables do
-      let sql = createTableSql table (Map.toSeq keys)
+    for (tableName, tableConfig) in Map.toSeq tables do
+      let sql = createTableSql tableName (Map.toSeq tableConfig.keys)
       connection.Execute(sql, trans) |> ignore
 
     trans.Commit()
@@ -64,11 +64,11 @@ let createTables (connStr: string) (tables: Map<string, Map<string, Model.TableT
 
 open System.Collections.Concurrent
 
-let insert (connStr: string) table (tableMap: Map<string, Model.TableType>) (utcDate: DateTime) (data: Model.Insert) : int64 =
+let insert (connStr: string) tableName (tableMap: Map<string, Model.TableType>) (utcDate: DateTime) (data: Model.Insert) : int64 =
   let keys = [| for (k, _) in tableMap |> Map.toSeq -> k |]
 
   let sql =
-    sprintf "insert into %s(%s, %s, %s) values(@%s, @%s, %s)" table
+    sprintf "insert into %s(%s, %s, %s) values(@%s, @%s, %s)" tableName
       UserIdKey UTCDateKey (keys |> String.concat ", ")
       UserIdKey UTCDateKey (keys |> Seq.map(sprintf "@%s") |> String.concat ", ")
 
@@ -88,7 +88,7 @@ let insert (connStr: string) table (tableMap: Map<string, Model.TableType>) (utc
       failwith "Value has not benn inserted"
     
     let x =
-      connection.Query(sprintf "select max(%s) from %s" IdKey table, trans)
+      connection.Query(sprintf "select max(%s) from %s" IdKey tableName, trans)
       |> Seq.head
     
     trans.Commit()

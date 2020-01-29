@@ -15,9 +15,13 @@
 
     "tables": {
         "Sample1": {
-            "Score1": "Int",
-            "Score2": "Float",
-            "Name": "Text"
+            "username" : "sample",
+            "password": "sample",
+            "keys" : {
+                "Score1": "Int",
+                "Score2": "Float",
+                "Name": "Text"
+            }
         }
     }
 }

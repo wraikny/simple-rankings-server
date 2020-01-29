@@ -14,9 +14,15 @@ with
     | Float -> "real"
     | Text -> "text"
 
+type TableConfig = {
+  username : string
+  password : string
+  keys : Map<string, TableType>
+}
+
 type Config = {
   databasePath : string
-  tables : Map<string, Map<string, TableType>>
+  tables : Map<string, TableConfig>
 } with
   static member Load path =
     System.IO.File.ReadAllText path
