@@ -4,6 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Globalization;
@@ -82,9 +83,22 @@ namespace SimpleRankingsServer
         }
     }
 
-    public static class Client
+    public class Client : IDisposable
     {
-        private static readonly HttpClient client = new HttpClient();
+        private readonly string url;
+        private readonly HttpClient client = new HttpClient();
+
+        public Client(string url, string username, string password)
+        {
+            this.url = url;
+            var parameter = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:{password}"));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", parameter);
+        }
+
+        public void Dispose()
+        {
+            client.Dispose();
+        }
 
         [DataContract]
         private class InsertParam<T>
@@ -113,7 +127,7 @@ namespace SimpleRankingsServer
             public long Id { get; set; }
         }
 
-        public static async Task<long> Insert<T>(string url, Guid userId, T data)
+        public async Task<long> Insert<T>(Guid userId, T data)
         {
             var json = JsonUtils.Serialize(new InsertParam<T> { UserId = userId, Values = data });
             using (var content = new StringContent(json, Encoding.UTF8, @"application/json"))
@@ -130,7 +144,7 @@ namespace SimpleRankingsServer
             }
         }
 
-        public static async Task<Data<T>[]> Select<T>(string url, string orderBy = null, bool? isDescending = null, int? limit = null)
+        public async Task<Data<T>[]> Select<T>(string orderBy = null, bool? isDescending = null, int? limit = 100)
         {
             var param = new Dictionary<string, string>();
 

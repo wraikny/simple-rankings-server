@@ -1,9 +1,10 @@
-open Suave
+﻿open Suave
 open Suave.Filters
 open Suave.Operators
 open Suave.Successful
 open Suave.RequestErrors
 open Suave.Json
+open Suave.Authentication
 open System.Runtime.Serialization
 open System
 open FSharp.Json
@@ -19,18 +20,12 @@ module ValueOption =
 module Endpoint =
   let private jsonConfig = JsonConfig.create(allowUntyped = true)
 
-  let inline pathTable config f =
+  let inline pathTable tableName f =
     Writers.setMimeType "application/json; charset=utf-8"
-    >=> pathScan "/v1/%s" (fun table ->
-      Map.tryFind table config.tables |> function
-      | Some tableMap -> f table tableMap
-      | _ ->
-        sprintf "Table %s is not found" table
-        |> NOT_FOUND
-    )
+    >=> path (sprintf "/v1/%s" tableName) >=> f()
 
-  let select config connStr =
-    pathTable config (fun table tableMap ->
+  let select tableName tableMap connStr =
+    pathTable tableName (fun () ->
       request(fun x ->
         try
           x.queryParam "orderBy"
@@ -47,7 +42,7 @@ module Endpoint =
             |> BAD_REQUEST
           
           | orderBy ->
-            { table = table
+            { table = tableName
               orderBy = orderBy
               limit = x.queryParam "limit" |> ValueOption.ofChoice |> ValueOption.map int
               isDescending =
@@ -68,8 +63,8 @@ module Endpoint =
 
   open System.Text
 
-  let insert config connStr =
-    pathTable config (fun table tableMap ->
+  let insert tableName tableMap connStr =
+    pathTable tableName (fun () ->
       try
         mapJsonWith
           (Encoding.UTF8.GetString >> Json.deserializeEx jsonConfig)
@@ -82,7 +77,7 @@ module Endpoint =
             |> function
             | [||] ->
               let date = DateTime.UtcNow
-              let id = Database.insert connStr table tableMap date param
+              let id = Database.insert connStr tableName tableMap date param
               { InsertResult.id = id }
             | xs ->
               failwithf "Keys %A are needed." xs
@@ -95,8 +90,11 @@ module Endpoint =
 
 let app config connStr =
   choose [
-    GET >=> Endpoint.select config connStr
-    POST >=> Endpoint.insert config connStr
+    for tableName, tableConfig in Map.toSeq config.tables do
+      authenticateBasic ((=) (tableConfig.username, tableConfig.password)) <| choose [
+        GET >=> Endpoint.select tableName tableConfig.keys connStr
+        POST >=> Endpoint.insert tableName tableConfig.keys connStr
+      ]
   ]
 
 [<EntryPoint>]

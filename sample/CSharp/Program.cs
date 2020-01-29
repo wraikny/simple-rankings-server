@@ -23,18 +23,28 @@ namespace CSharp
             }
         }
 
+        const string Url = @"http://localhost:8080/v1/Sample1";
+        const string Username = "sample";
+        const string Password = "sample";
+
         static void Main(string[] args)
         {
-            const string Url = @"http://localhost:8080/v1/Sample1";
+            // clientは使い回す
+            Client client = new Client(Url, Username, Password);
 
+            // PlayerのGuidはファイルなどに保存しておく
             var userId = Guid.NewGuid();
 
+            // insertするデータを作成
             var sample = new Sample1 { Score1 = 118, Score2 = 204.6, Name = "kitsune" };
-            var result = Client.Insert(Url, userId, sample).Result;
 
+            // データベースに追加
+            // 追加したデータのidを取得
+            var result = client.Insert(userId, sample).Result;
             Console.WriteLine(result);
 
-            var data = Client.Select<Sample1>(Url, orderBy: "Id", limit: 2).Result;
+            // データベースから取得
+            var data = client.Select<Sample1>(orderBy: "Id", limit: 2).Result;
             foreach (var x in data)
             {
                 Console.WriteLine(x);

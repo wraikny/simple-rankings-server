@@ -5,6 +5,7 @@ module SimpleRankingsServer =
   open System.Text
   open System.Collections.Generic
   open System.Net.Http
+  open System.Net.Http.Headers
   open System.ComponentModel
   open FSharp.Json
 
@@ -39,12 +40,20 @@ module SimpleRankingsServer =
   #endif
   type InsertResult = { id : int64 }
   
-  let private client = new HttpClient()
 
   let private jsonConfig = JsonConfig.create(allowUntyped = true)
 
-  type Client =
-    static member Insert (url: string, userId, data) : Async<int64> =
+  type Client(url : string, usrename, password) =
+    let client = new HttpClient()
+
+    do
+      let parameter = Convert.ToBase64String(Encoding.UTF8.GetBytes(sprintf "%s:%s" usrename password));
+      client.DefaultRequestHeaders.Authorization <- new AuthenticationHeaderValue("Basic", parameter);
+
+    interface IDisposable with
+      member __.Dispose() = client.Dispose()
+
+    member this.Insert (userId, data) : Async<int64> =
       async {
         let json = Json.serializeEx jsonConfig { userId = userId; values = data }
         use content = new StringContent(json, Encoding.UTF8, @"application/json")
@@ -58,7 +67,7 @@ module SimpleRankingsServer =
           return failwithf "%A:%s" result.StatusCode resString
       }
 
-    static member Select (url: string, ?orderBy : string, ?isDescending : bool, ?limit : int) : Async<Data<'a>[]> =
+    member this.Select (?orderBy : string, ?isDescending : bool, ?limit : int) : Async<Data<'a>[]> =
       async {
         let param = Dictionary<string, string>()
         let inline add s x =
@@ -85,23 +94,26 @@ type Sample1 = {
   Name : string
 }
 
-[<Literal>]
-let Url = @"http://localhost:8080/v1/Sample1"
+let [<Literal>] Url = @"http://localhost:8080/v1/Sample1"
+let [<Literal>] Username = "sample"
+let [<Literal>] Password = "sample"
 
 open System
 open SimpleRankingsServer
 
 [<EntryPoint>]
 let main _ =
+  use client = new Client(Url, Username, Password)
   async {
+    
     let userId = Guid.NewGuid()
 
     let sample = { Score1 = 90; Score2 = 111.1; Name = "taremimi" }
-    let! result = Client.Insert(Url, userId, sample)
+    let! result = client.Insert(userId, sample)
 
     printfn "%A" result
 
-    let! data = Client.Select<Sample1>(Url, "Score1", limit = 7)
+    let! data = client.Select<Sample1>("Score1", limit = 7)
     for x in data do
       printfn "%A" x
   } |> Async.RunSynchronously
