@@ -1,4 +1,4 @@
-﻿open Suave
+open Suave
 open Suave.Filters
 open Suave.Operators
 open Suave.Successful
@@ -38,9 +38,9 @@ module Endpoint =
           |> function
           | ValueSome s
             when s <> Database.IdKey &&
-              Map.tryFind s tableMap
-              |> Option.map(fun t -> t = Int || t = Float)
-              |> Option.defaultValue false
+              (Map.tryFind s tableMap
+              |> Option.map((=) Text)
+              |> Option.defaultValue true)
               ->
 
             sprintf "orderBy '%s' is invalid key" s
