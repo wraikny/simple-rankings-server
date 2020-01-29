@@ -33,24 +33,28 @@ module Endpoint =
     pathTable config (fun table tableMap ->
       request(fun x ->
         try
-          let orderBy = x.queryParam "orderBy" |> ValueOption.ofChoice
-          orderBy |> function
+          x.queryParam "orderBy"
+          |> ValueOption.ofChoice
+          |> function
           | ValueSome s
-            when s <> Database.IdKey
-            && let t = Map.tryFind s tableMap in t = Some Int || t = Some Float ->
+            when s <> Database.IdKey &&
+              Map.tryFind s tableMap
+              |> Option.map(fun t -> t = Int || t = Float)
+              |> Option.defaultValue false
+              ->
 
             sprintf "orderBy '%s' is invalid key" s
             |> BAD_REQUEST
-          | _ ->
+          
+          | orderBy ->
             { table = table
               orderBy = orderBy
+              limit = x.queryParam "limit" |> ValueOption.ofChoice |> ValueOption.map int
               isDescending =
                 x.queryParam "isDescending" |> function
-                | Choice2Of2 _
-                | Choice1Of2 "true" -> true
+                | Choice2Of2 _ | Choice1Of2 "true" -> true
                 | Choice1Of2 "false" -> false
                 | Choice1Of2 s -> failwithf "Unexpected value in isDescending '%s'" s
-              limit = x.queryParam "limit" |> ValueOption.ofChoice |> ValueOption.map int
             }
             |> Database.select connStr tableMap
             |> Json.serializeEx jsonConfig
@@ -79,7 +83,6 @@ module Endpoint =
             | [||] ->
               let date = DateTime.UtcNow
               let id = Database.insert connStr table tableMap date param
-
               { InsertResult.id = id }
             | xs ->
               failwithf "Keys %A are needed." xs
@@ -88,7 +91,6 @@ module Endpoint =
         let s = sprintf "%A:%s" (e.GetType()) e.Message
         eprintfn "%s" s
         BAD_REQUEST s
-    
     )
 
 let app config connStr =
