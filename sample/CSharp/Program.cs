@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Net.Http;
 using System.Runtime.Serialization;
-using SimpleRankingsServer;
 
 namespace CSharp
 {
@@ -27,30 +25,32 @@ namespace CSharp
         const string Username = "sample";
         const string Password = "sample";
 
+        // clientは使い回す
+        static SimpleRankingsServer.Client client = new SimpleRankingsServer.Client(Url, Username, Password);
+
+        // PlayerのGuidはファイルなどに保存しておく
+        static Guid userId = Guid.NewGuid();
+
         static void Main(string[] args)
         {
-            // clientは使い回す
-            Client client = new Client(Url, Username, Password);
-
-            // PlayerのGuidはファイルなどに保存しておく
-            var userId = Guid.NewGuid();
-
             // insertするデータを作成
             var sample = new Sample1 { Score1 = 118, Score2 = 204.6, Name = "kitsune" };
 
             // データベースに追加
             // 追加したデータのidを取得
-            var result = client.Insert(userId, sample).Result;
+            var result = client.InsertAsync(userId, sample).Result;
             Console.WriteLine(result);
 
             // データベースから取得
-            var data = client.Select<Sample1>(orderBy: "Id", limit: 2).Result;
+            var data = client.SelectAsync<Sample1>(orderBy: "Id", limit: 2).Result;
             foreach (var x in data)
             {
                 Console.WriteLine(x);
             }
 
             Console.ReadLine();
+
+            client.Dispose();
         }
     }
 }

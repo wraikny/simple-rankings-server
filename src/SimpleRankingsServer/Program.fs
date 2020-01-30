@@ -47,8 +47,8 @@ module Endpoint =
               limit = x.queryParam "limit" |> ValueOption.ofChoice |> ValueOption.map int
               isDescending =
                 x.queryParam "isDescending" |> function
-                | Choice2Of2 _ | Choice1Of2 "true" -> true
                 | Choice1Of2 "false" -> false
+                | Choice1Of2 "true" | Choice2Of2 _ -> true
                 | Choice1Of2 s -> failwithf "Unexpected value in isDescending '%s'" s
             }
             |> Database.select connStr tableMap
