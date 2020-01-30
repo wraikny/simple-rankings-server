@@ -14,50 +14,34 @@ namespace SimpleRankingsServer
     [DataContract]
     public class Data<T>
     {
+        [DataMember]
+        private string userId { get; set; }
+
+        [DataMember]
+        private string utcDate { get; set; }
+
+
         [DataMember(Name = "id")]
-        public long Id { get; internal set; }
+        public long Id { get; private set; }
 
-        [DataMember(Name = "userId")]
-        internal string UserIdStr { get; set; }
-
-        [DataMember(Name = "utcDate")]
-        internal string UTCDateStr { get; set; }
 
         [DataMember(Name = "values")]
-        public T Values { get; internal set; }
+        public T Values { get; private set; }
 
-        private Guid userId;
-        public Guid UserId
-        {
-            get => userId;
-            set
-            {
-                userId = value;
-                UserIdStr = value.ToString();
-            }
-        }
+        public Guid UserId { get; private set; }
 
-        private DateTime utcDate;
-        public DateTime UTCDate
-        {
-            get => utcDate;
-            set
-            {
-                utcDate = value;
-                UTCDateStr = value.ToString("yyyy/MM/dd/HH/mm/ss");
-            }
-        }
-
-        public override string ToString()
-        {
-            return $"{{ \"id\" : {Id}, \"userId\" : {UserIdStr}, \"utcDate\" : {UTCDateStr}, \"values\" : {Values.ToString()} }}";
-        }
+        public DateTime UTCDate { get; private set; }
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext s)
         {
-            userId = Guid.Parse(UserIdStr);
-            utcDate = DateTime.ParseExact(UTCDateStr, "yyyy/MM/dd HH:mm:ss", null);
+            UserId = Guid.Parse(userId);
+            UTCDate = DateTime.ParseExact(utcDate, "yyyy/MM/dd HH:mm:ss", null);
+        }
+
+        public override string ToString()
+        {
+            return $"{{ \"id\" : {Id}, \"userId\" : {userId}, \"utcDate\" : {utcDate}, \"values\" : {Values} }}";
         }
     }
 
@@ -127,7 +111,7 @@ namespace SimpleRankingsServer
             public long Id { get; set; }
         }
 
-        public async Task<long> Insert<T>(Guid userId, T data)
+        public async Task<long> InsertAsync<T>(Guid userId, T data)
         {
             var json = JsonUtils.Serialize(new InsertParam<T> { UserId = userId, Values = data });
             using (var content = new StringContent(json, Encoding.UTF8, @"application/json"))
@@ -144,13 +128,13 @@ namespace SimpleRankingsServer
             }
         }
 
-        public async Task<Data<T>[]> Select<T>(string orderBy = null, bool? isDescending = null, int? limit = 100)
+        public async Task<Data<T>[]> SelectAsync<T>(string orderBy = null, bool isDescending = true, int limit = 100)
         {
             var param = new Dictionary<string, string>();
 
             if (orderBy != null) param.Add("orderBy", orderBy);
-            if (isDescending != null) param.Add("isDescending", isDescending.Value.ToString());
-            if (limit != null) param.Add("limit", limit.Value.ToString());
+            param.Add("isDescending", isDescending.ToString());
+            param.Add("limit", limit.ToString());
 
             var result = await client.GetAsync($"{url}?{await new FormUrlEncodedContent(param).ReadAsStringAsync()}");
             var resString = await result.Content.ReadAsStringAsync();
