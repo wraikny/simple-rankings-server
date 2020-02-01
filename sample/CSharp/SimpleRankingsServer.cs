@@ -28,8 +28,10 @@ namespace SimpleRankingsServer
         [DataMember(Name = "values")]
         public T Values { get; private set; }
 
+        [IgnoreDataMember]
         public Guid UserId { get; private set; }
 
+        [IgnoreDataMember]
         public DateTime UTCDate { get; private set; }
 
         [OnDeserialized]
@@ -89,6 +91,7 @@ namespace SimpleRankingsServer
         {
             [DataMember(Name = "userId")]
             public string UserIdStr { get; set; }
+
             [DataMember(Name = "values")]
             public T Values { get; set; }
 
