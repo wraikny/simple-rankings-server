@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
-using System.Globalization;
 
 namespace SimpleRankingsServer
 {
@@ -131,7 +130,7 @@ namespace SimpleRankingsServer
             }
         }
 
-        public async Task<Data<T>[]> SelectAsync<T>(string orderBy = null, bool isDescending = true, int limit = 100)
+        public async Task<IReadOnlyList<Data<T>>> SelectAsync<T>(string orderBy = null, bool isDescending = true, int limit = 100)
         {
             var param = new Dictionary<string, string>();
 

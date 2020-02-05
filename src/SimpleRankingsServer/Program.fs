@@ -20,12 +20,12 @@ module ValueOption =
 module Endpoint =
   let private jsonConfig = JsonConfig.create(allowUntyped = true)
 
-  let inline pathTable tableName f =
+  let inline pathTable version tableName f =
     Writers.setMimeType "application/json; charset=utf-8"
-    >=> path (sprintf "/v1/%s" tableName) >=> f()
+    >=> path (sprintf "/%s/%s" version tableName) >=> f()
 
-  let select tableName tableMap connStr =
-    pathTable tableName (fun () ->
+  let select version tableName tableMap connStr =
+    pathTable version tableName (fun () ->
       request(fun x ->
         try
           x.queryParam "orderBy"
@@ -47,9 +47,12 @@ module Endpoint =
               limit = x.queryParam "limit" |> ValueOption.ofChoice |> ValueOption.map int
               isDescending =
                 x.queryParam "isDescending" |> function
-                | Choice1Of2 "false" -> false
-                | Choice1Of2 "true" | Choice2Of2 _ -> true
-                | Choice1Of2 s -> failwithf "Unexpected value in isDescending '%s'" s
+                | Choice1Of2 x ->
+                  Boolean.TryParse x
+                  |> function
+                  | true, t -> t
+                  | _, _ -> failwithf "Unexpected value in isDescending '%s'" x
+                | Choice2Of2 _ -> true
             }
             |> Database.select connStr tableMap
             |> Json.serializeEx jsonConfig
@@ -63,8 +66,8 @@ module Endpoint =
 
   open System.Text
 
-  let insert tableName tableMap connStr =
-    pathTable tableName (fun () ->
+  let insert version tableName tableMap connStr =
+    pathTable version tableName (fun () ->
       try
         mapJsonWith
           (Encoding.UTF8.GetString >> Json.deserializeEx jsonConfig)
@@ -92,8 +95,8 @@ let app config connStr =
   choose [
     for tableName, tableConfig in Map.toSeq config.tables do
       authenticateBasic ((=) (tableConfig.username, tableConfig.password)) <| choose [
-        GET >=> Endpoint.select tableName tableConfig.keys connStr
-        POST >=> Endpoint.insert tableName tableConfig.keys connStr
+        GET >=> Endpoint.select config.version tableName tableConfig.keys connStr
+        POST >=> Endpoint.insert config.version tableName tableConfig.keys connStr
       ]
   ]
 
@@ -103,7 +106,7 @@ open Suave.Sockets
 
 let conf (port: uint16) =
   let socketBinding : Sockets.SocketBinding =
-    let ip : Net.IPAddress =
+    let ip : IPAddress =
       Dns.GetHostName()
       |>  Dns.GetHostAddresses
       |> Seq.find(fun x -> x.AddressFamily = AddressFamily.InterNetwork)
@@ -124,6 +127,10 @@ let main _ =
   Database.createTables connStr config.tables
 
   app config connStr
+  #if DEBUG
+  |> startWebServer defaultConfig
+  #else
   |> startWebServer (conf config.port)
+  #endif
 
   0

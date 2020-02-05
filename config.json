@@ -11,9 +11,11 @@
         "4. 一度作成したテーブルの設定は変更しないでください"
     ],
 
-    "port": 8080,
-
     "databasePath": "sample.db",
+
+    "version": "v1",
+
+    "port": 8080,
 
     "tables": {
         "Sample1": {
