@@ -1,4 +1,4 @@
-﻿open Suave
+open Suave
 open Suave.Filters
 open Suave.Operators
 open Suave.Successful
@@ -47,9 +47,12 @@ module Endpoint =
               limit = x.queryParam "limit" |> ValueOption.ofChoice |> ValueOption.map int
               isDescending =
                 x.queryParam "isDescending" |> function
-                | Choice1Of2 "false" -> false
-                | Choice1Of2 "true" | Choice2Of2 _ -> true
-                | Choice1Of2 s -> failwithf "Unexpected value in isDescending '%s'" s
+                | Choice1Of2 x ->
+                  Boolean.TryParse x
+                  |> function
+                  | true, t -> t
+                  | _, _ -> failwithf "Unexpected value in isDescending '%s'" x
+                | Choice2Of2 _ -> true
             }
             |> Database.select connStr tableMap
             |> Json.serializeEx jsonConfig
