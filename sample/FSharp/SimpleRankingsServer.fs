@@ -6,6 +6,7 @@ open System.Collections.Generic
 open System.Net.Http
 open System.Net.Http.Headers
 open FSharp.Json
+open System.ComponentModel
 
 type DateTimeString() =
   interface ITypeTransform with
