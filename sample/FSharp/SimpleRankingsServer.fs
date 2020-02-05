@@ -5,7 +5,6 @@ open System.Text
 open System.Collections.Generic
 open System.Net.Http
 open System.Net.Http.Headers
-open System.ComponentModel
 open FSharp.Json
 
 type DateTimeString() =
@@ -14,7 +13,7 @@ type DateTimeString() =
     member __.toTargetType value = (fun (v: obj) ->
       (v :?> DateTime).ToString "yyyy/MM/dd HH:mm:ss" :> obj) value
     
-    member x.fromTargetType value = (fun (v: obj) ->
+    member __.fromTargetType value = (fun (v: obj) ->
       DateTime.ParseExact(v:?> string, "yyyy/MM/dd HH:mm:ss", null) :> obj) value
 
 type Data<'a> = {
@@ -52,7 +51,7 @@ type Client(url : string, usrename, password) =
   interface IDisposable with
     member __.Dispose() = client.Dispose()
 
-  member this.AsyncInsert (userId, data) : Async<int64> =
+  member __.AsyncInsert (userId, data) : Async<int64> =
     async {
       let json = Json.serializeEx jsonConfig { userId = userId; values = data }
       use content = new StringContent(json, Encoding.UTF8, @"application/json")
@@ -66,7 +65,7 @@ type Client(url : string, usrename, password) =
         return failwithf "%A:%s" result.StatusCode resString
     }
 
-  member this.AsyncSelect (?orderBy : string, ?isDescending : bool, ?limit : int) : Async<Data<'a>[]> =
+  member __.AsyncSelect (?orderBy : string, ?isDescending : bool, ?limit : int) : Async<Data<'a>[]> =
     async {
       let param = Dictionary<string, string>()
       let inline add s x =
