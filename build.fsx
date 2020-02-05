@@ -45,6 +45,18 @@ Target.create "Build" (fun _ ->
   |> Seq.iter (DotNet.build id)
 )
 
+Target.create "Publish" (fun _ ->
+  "src/SimpleRankingsServer/SimpleRankingsServer.fsproj"
+  |> DotNet.publish (fun option ->
+    { option with
+        Configuration = DotNet.BuildConfiguration.Release
+        SelfContained = Some true
+        OutputPath = Some "./publish/linux-x64"
+        Runtime = Some "linux-x64"
+    }
+  )
+)
+
 Target.create "All" ignore
 
 "Clean"
