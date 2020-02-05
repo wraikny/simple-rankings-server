@@ -1,4 +1,4 @@
-open Suave
+﻿open Suave
 open Suave.Filters
 open Suave.Operators
 open Suave.Successful
@@ -106,7 +106,7 @@ open Suave.Sockets
 
 let conf (port: uint16) =
   let socketBinding : Sockets.SocketBinding =
-    let ip : Net.IPAddress =
+    let ip : IPAddress =
       Dns.GetHostName()
       |>  Dns.GetHostAddresses
       |> Seq.find(fun x -> x.AddressFamily = AddressFamily.InterNetwork)
@@ -127,6 +127,10 @@ let main _ =
   Database.createTables connStr config.tables
 
   app config connStr
+  #if DEBUG
+  |> startWebServer defaultConfig
+  #else
   |> startWebServer (conf config.port)
+  #endif
 
   0
