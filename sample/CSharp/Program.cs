@@ -21,7 +21,7 @@ namespace CSharp
             }
         }
 
-        const string Url = @"http://localhost:8080/v1/Sample1";
+        const string Url = @"http://localhost:8080/api/Sample1";
         const string Username = "sample";
         const string Password = "sample";
 
