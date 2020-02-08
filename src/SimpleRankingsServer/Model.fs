@@ -21,7 +21,6 @@ type TableConfig = {
 }
 
 type Config = {
-  version : string
   port : uint16
   databasePath : string
   tables : Map<string, TableConfig>

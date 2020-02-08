@@ -13,8 +13,6 @@
 
     "databasePath": "sample.db",
 
-    "version": "v1",
-
     "port": 8080,
 
     "tables": {

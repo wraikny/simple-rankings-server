@@ -4,7 +4,7 @@
   Name : string
 }
 
-let [<Literal>] Url = @"http://localhost:8080/v1/Sample1"
+let [<Literal>] Url = @"http://localhost:8080/api/Sample1"
 let [<Literal>] Username = "sample"
 let [<Literal>] Password = "sample"
 
