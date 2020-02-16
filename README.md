@@ -39,40 +39,47 @@ $ dotnet --version
 3.0.100
 ```
 
-## Restoring after Clone
+## CLI
+
+### Restoring after Clone
 ```shell
 $ dotnet tool restore
-$ dotnet paket restore
 ```
 
-## Build
+### Build
 ```shell
-$ dotnet fake build
+$ dotnet fake build # Build all projects as Release
+$ # or
+$ dotnet build --project src/SampleApp [-c {Debug|Release}]
 ```
 
-## Run
+### Run
 ```shell
 $ dotnet run --project src/SampleApp [-c {Debug|Release}]
 ```
 
-## Tests
+### Tests
 ```shell
 $ dotnet fake build -t Test
-```
-OR
-```
+$ #or
 $ dotnet run --project tests/SampleTest
 ```
 
-## [Paket](https://fsprojects.github.io/Paket/index.html)  
-Each project needs: [paket.references](/src/SampleApp/paket.references) file.
+## References
+### [Paket](https://fsprojects.github.io/Paket/index.html)  
+Each project requires `paket.references` file.
 
 After updating [paket.dependencies](/paket.dependencies):
 ```shell
 $ dotnet paket install
 ```
 
-## [FAKE](https://fake.build/)  
+To Update Versions of Libraries,
+```shell
+$ dotnet paket update
+```
+
+### [FAKE](https://fake.build/)  
 Scripting at [build.fsx](/build.fsx).  
 
 ```shell
@@ -80,8 +87,37 @@ $ dotnet fake build -t Clean # Run "Clean" Target
 $ dotnet fake build # Run Default Taret
 ```
 
-## Tool Update
+### Create Project
 ```shell
-$ dotnet tool update fake-cli
-$ dotnet tool update paket
+$ # Application
+$ dotnet new console -lang=f# -o src/SampleApp
+$ echo 'FSharp.Core' > src/SampleApp/paket.references
+$ paket install
+
+$ # Library
+$ dotnet new classlib -lang=f# -o src/SampleLib
+$ echo 'FSharp.Core' > src/SampleLib/paket.references
+$ paket install
 ```
+
+### Create Test Project
+```shell
+$ dotnet new console -lang=f# -o tests/SampleTest
+$ echo -e 'FSharp.Core\nExpecto\nExpecto.FsCheck' > tests/SampleTest/paket.references
+
+$ paket install # Add reference of Paket to .fsproj file
+```
+and then, Add **Project Name** to [build.fsx](/build.fsx).
+
+### Create Solution
+```shell
+$ dotnet new sln
+$ dotnet sln add src/SampleApp
+$ dotnet sln add src/SampleLib
+```
+
+### Update Tool
+```shell
+$ dotnet fake build -t Tool
+```
+and then, commit [.config/dotnet-tools.json](/.config/dotnet-tools.json).

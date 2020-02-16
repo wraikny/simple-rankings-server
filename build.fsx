@@ -12,10 +12,6 @@ open Fake.IO.Globbing.Operators
 open Fake.Core.TargetOperators
 
 let testProjects = []
-  // "SampleTest"
-  // "NewTestProject"
-  // (F# list is separated '\n' or ';', not ',')
-// ]
 
 Target.create "Test" (fun _ ->
   [ for x in testProjects ->
@@ -26,6 +22,13 @@ Target.create "Test" (fun _ ->
   | x::xs ->
     Seq.fold (++) (!! x) xs
     |> Expecto.run id
+)
+
+let dotnet cmd arg = DotNet.exec id cmd arg |> ignore
+
+Target.create "Tool" (fun _ ->
+  dotnet "tool" "update paket"
+  dotnet "tool" "update fake-cli"
 )
 
 Target.create "Clean" (fun _ ->
