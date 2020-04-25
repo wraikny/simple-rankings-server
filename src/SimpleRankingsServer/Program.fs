@@ -5,8 +5,13 @@ open Suave.Successful
 open Suave.RequestErrors
 open Suave.Json
 open Suave.Authentication
-open System.Runtime.Serialization
+open Suave.Logging
+
 open System
+open System.Runtime.Serialization
+open System.Collections.Generic
+open System.Text
+
 open FSharp.Json
 open Model
 
@@ -16,87 +21,91 @@ module ValueOption =
     | Choice1Of2 a -> ValueSome a
     | _ -> ValueNone
 
+let logger =
+
+  LiterateConsoleTarget(
+    name = [|"SimpleRankingsServer"|],
+    minLevel = LogLevel.Verbose,
+    options = Literate.LiterateOptions.create(),
+    outputTemplate = "[{level}] {timestampUtc:o} {message} [{source}]{exceptions}"
+  ) :> Logger
 
 module Endpoint =
   let private jsonConfig = JsonConfig.create(allowUntyped = true)
 
-  let inline pathTable tableName f =
+  let inline pathTable dbName f =
     Writers.setMimeType "application/json; charset=utf-8"
-    >=> path (sprintf "/api/%s" tableName) >=> f()
+    >=> path (sprintf "/api/%s" dbName) >=> f()
 
-  let select tableName tableMap connStr =
-    pathTable tableName (fun () ->
+  let select dbName tableMap connStr =
+    pathTable dbName (fun () ->
       request(fun x ->
         try
-          x.queryParam "orderBy"
-          |> ValueOption.ofChoice
+          ( x.queryParam "table"|> ValueOption.ofChoice
+          , x.queryParam "orderBy" |> ValueOption.ofChoice
+          )
           |> function
-          | ValueSome s
+          | ValueNone, _ ->
+            sprintf "missing 'table' field"
+            |> BAD_REQUEST
+          | _, ValueSome s
             when s <> Database.IdKey &&
               (Map.tryFind s tableMap
               |> Option.map((=) Text)
               |> Option.defaultValue true)
               ->
 
-            sprintf "orderBy '%s' is invalid key" s
+            sprintf "'orderBy': '%s' is invalid" s
             |> BAD_REQUEST
-          
-          | orderBy ->
+
+          | ValueSome tableName, orderBy ->
             { table = tableName
               orderBy = orderBy
               limit = x.queryParam "limit" |> ValueOption.ofChoice |> ValueOption.map int
               isDescending =
-                x.queryParam "isDescending" |> function
-                | Choice1Of2 x ->
-                  Boolean.TryParse x
-                  |> function
-                  | true, t -> t
-                  | _, _ -> failwithf "Unexpected value in isDescending '%s'" x
-                | Choice2Of2 _ -> true
+                x.queryParam "isDescending" |> ValueOption.ofChoice |> ValueOption.map Boolean.Parse
             }
             |> Database.select connStr tableMap
             |> Json.serializeEx jsonConfig
             |> OK
         with e ->
           let s = sprintf "%A:%s" (e.GetType()) e.Message
-          eprintfn "%s" s
           BAD_REQUEST s
-      )
+      ) >=> logStructured logger logFormatStructured
     )
 
-  open System.Text
-
-  let insert tableName tableMap connStr =
-    pathTable tableName (fun () ->
+  let insert dbName (tableMap: Model.TableConfig) connStr =
+    pathTable dbName (fun () ->
       try
         mapJsonWith
           (Encoding.UTF8.GetString >> Json.deserializeEx jsonConfig)
           (Json.serialize >> Encoding.UTF8.GetBytes)
           (fun (param : Insert) ->
-            tableMap
-            |> Map.toSeq
-            |> Seq.filter(fun (k, _) -> not <| param.values.ContainsKey k)
-            |> Seq.toArray
+            [|
+              for table in tableMap do
+                if not <| param.values.ContainsKey(table.Key) then
+                  yield table.Key
+            |]
             |> function
             | [||] ->
               let date = DateTime.UtcNow
-              let id = Database.insert connStr tableName tableMap date param
+              let id = Database.insert connStr param.table tableMap date param
               { InsertResult.id = id }
             | xs ->
               failwithf "Keys %A are needed." xs
           )
       with e ->
         let s = sprintf "%A:%s" (e.GetType()) e.Message
-        eprintfn "%s" s
         BAD_REQUEST s
-    )
+    ) >=> logStructured logger logFormatStructured
 
-let app config connStr =
+let app (config: Model.Config) (connStrDict: IReadOnlyDictionary<string, string>) =
   choose [
-    for tableName, tableConfig in Map.toSeq config.tables do
-      authenticateBasic ((=) (tableConfig.username, tableConfig.password)) <| choose [
-        GET >=> Endpoint.select tableName tableConfig.keys connStr
-        POST >=> Endpoint.insert tableName tableConfig.keys connStr
+    for dbName, gameConfig in Map.toSeq config.games ->
+      authenticateBasic ((=) (gameConfig.username, gameConfig.password)) <| choose [
+        for tableName, keys in Map.toSeq gameConfig.tables do
+          yield GET >=> Endpoint.select dbName keys (connStrDict.[dbName])
+          yield POST >=> Endpoint.insert dbName keys (connStrDict.[dbName])
       ]
   ]
 
@@ -116,19 +125,29 @@ let conf (port: uint16) =
     { scheme = HTTP
       socketBinding = socketBinding }
 
-  { defaultConfig with bindings = [ httpBinding ] }
+  { defaultConfig with bindings = [ httpBinding ]; logger = logger }
 
 
 [<EntryPoint>]
 let main _ =
   let config = Config.Load @"config.json"
-  let connStr = (Database.createConfig config.databasePath).ToString()
 
-  Database.createTables connStr config.tables
+  if not <| IO.Directory.Exists config.directory then
+    IO.Directory.CreateDirectory config.directory
+    |> printfn "Directory created: %A"
 
-  app config connStr
+  let connStrDict = Dictionary<string, string>()
+
+  for (dbname, gameConfig) in config.games |> Map.toSeq do
+    let dbPath = sprintf "%s/%s.db" config.directory dbname
+    let connStr = (Database.createConfig dbPath).ToString()
+    connStrDict.[dbname] <- connStr
+
+    Database.createTables connStr gameConfig.tables
+
+  app config connStrDict
   #if DEBUG
-  |> startWebServer defaultConfig
+  |> startWebServer { defaultConfig with logger = logger }
   #else
   |> startWebServer (conf config.port)
   #endif

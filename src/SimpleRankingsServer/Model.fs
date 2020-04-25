@@ -8,24 +8,26 @@ type TableType =
   | Float
   | Text
 with
-  member x.ToSql() =
+  member inline x.ToSql() =
     x |> function
     | Int -> "int"
     | Float -> "real"
     | Text -> "text"
 
-type TableConfig = {
+type TableConfig = Map<string, TableType>
+
+type GameConfig = {
   username : string
   password : string
-  keys : Map<string, TableType>
+  tables: Map<string, TableConfig>
 }
 
 type Config = {
   port : uint16
-  databasePath : string
-  tables : Map<string, TableConfig>
+  directory : string
+  games : Map<string, GameConfig>
 } with
-  static member Load path =
+  static member inline Load path =
     System.IO.File.ReadAllText path
     |> Json.deserialize<Config>
 
@@ -39,11 +41,12 @@ type Record = {
 type Select = {
   table : string
   orderBy : string voption
-  isDescending : bool
+  isDescending : bool voption
   limit : int voption
 }
 
 type Insert = {
+  table: string
   userId : string
   values : Map<string, obj>
 }

@@ -88,13 +88,19 @@ namespace SimpleRankingsServer
         [DataContract]
         private class InsertParam<T>
         {
+            [DataMember(Name = "table")]
+            public string Table { get; set; }
+
             [DataMember(Name = "userId")]
             public string UserIdStr { get; set; }
 
             [DataMember(Name = "values")]
             public T Values { get; set; }
 
+            [IgnoreDataMember]
             private Guid userId;
+
+            [IgnoreDataMember]
             public Guid UserId
             {
                 get => userId;
@@ -113,9 +119,9 @@ namespace SimpleRankingsServer
             public long Id { get; set; }
         }
 
-        public async Task<long> InsertAsync<T>(Guid userId, T data)
+        public async Task<long> InsertAsync<T>(string tableName, Guid userId, T data)
         {
-            var json = JsonUtils.Serialize(new InsertParam<T> { UserId = userId, Values = data });
+            var json = JsonUtils.Serialize(new InsertParam<T> { Table = tableName, UserId = userId, Values = data });
             using (var content = new StringContent(json, Encoding.UTF8, @"application/json"))
             {
                 var result = await client.PostAsync(url, content);
@@ -130,13 +136,13 @@ namespace SimpleRankingsServer
             }
         }
 
-        public async Task<IReadOnlyList<Data<T>>> SelectAsync<T>(string orderBy = null, bool isDescending = true, int limit = 100)
+        public async Task<IReadOnlyList<Data<T>>> SelectAsync<T>(string table, string orderBy = null, bool isDescending = true, int limit = 100)
         {
             var param = new Dictionary<string, string>();
-
-            if (orderBy != null) param.Add("orderBy", orderBy);
+            param.Add("table", table);
             param.Add("isDescending", isDescending.ToString());
             param.Add("limit", limit.ToString());
+            if (orderBy != null) param.Add("orderBy", orderBy);
 
             var result = await client.GetAsync($"{url}?{await new FormUrlEncodedContent(param).ReadAsStringAsync()}");
             var resString = await result.Content.ReadAsStringAsync();

@@ -1,28 +1,36 @@
 {
     "readme": [
-        "1. Don't use same table name",
-        "2. Don't use 'Id', 'UserId' or 'Date' as key",
-        "3. Available type is 'Int', 'Float' or 'Text'",
-        "4. Never change the setting of table which has been created once",
+        "- Don't use same table name",
+        "- Don't use 'Id', 'UserId', 'Date' as key",
+        "- Available types are Int, Float, Text",
+        "- Never change the setting of table which has been created once",
+        "- API entry point is '/api/{dbName}'",
 
-        "1. 同じテーブル名を使用しないでください",
-        "2. 'Id','UserId','Date'をキーの名前として用いないでください",
-        "3. 利用可能なデータ型は'Int','Float','Text'です",
-        "4. 一度作成したテーブルの設定は変更しないでください"
+        "- 同じテーブル名を使用しないでください",
+        "- 'Id', 'UserId', 'Date'をキーの名前として用いないでください",
+        "- 利用可能なデータ型は Int, Float, Text です",
+        "- 一度作成したテーブルの設定は変更しないでください",
+        "- APIエントリーポイントは'/api/{dbName}'です。"
     ],
 
-    "databasePath": "sample.db",
+    "directory": "databases",
 
     "port": 8080,
 
-    "tables": {
-        "Sample1": {
+    "games": {
+        "SampleDB": {
             "username": "sample",
             "password": "sample",
-            "keys": {
-                "Score1": "Int",
-                "Score2": "Float",
-                "Name": "Text"
+            "tables": {
+                "SampleTable": {
+                    "Score1": "Int",
+                    "Score2": "Float",
+                    "Name": "Text"
+                },
+                "SampleTable2": {
+                    "Score1": "Text",
+                    "Name": "Text"
+                }
             }
         }
     }

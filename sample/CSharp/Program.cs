@@ -21,7 +21,7 @@ namespace CSharp
             }
         }
 
-        const string Url = @"http://localhost:8080/api/Sample1";
+        const string Url = @"http://localhost:8080/api/SampleDB";
         const string Username = "sample";
         const string Password = "sample";
 
@@ -38,11 +38,11 @@ namespace CSharp
 
             // データベースに追加
             // 追加したデータのidを取得
-            var result = client.InsertAsync(userId, sample).Result;
+            var result = client.InsertAsync("SampleTable", userId, sample).Result;
             Console.WriteLine(result);
 
             // データベースから取得
-            var data = client.SelectAsync<Sample1>(orderBy: "Id", limit: 2).Result;
+            var data = client.SelectAsync<Sample1>("SampleTable", orderBy: "Id", limit: 2).Result;
             foreach (var x in data)
             {
                 Console.WriteLine(x);

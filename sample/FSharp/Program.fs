@@ -4,7 +4,7 @@
   Name : string
 }
 
-let [<Literal>] Url = @"http://localhost:8080/api/Sample1"
+let [<Literal>] Url = @"http://localhost:8080/api/SampleDB"
 let [<Literal>] Username = "sample"
 let [<Literal>] Password = "sample"
 
@@ -17,11 +17,11 @@ let main _ =
 
   async {
     let sample = { Score1 = 90; Score2 = 111.1; Name = "taremimi" }
-    let! result = client.AsyncInsert(userId, sample)
+    let! result = client.AsyncInsert("SampleTable", userId, sample)
 
     printfn "%A" result
 
-    let! data = client.AsyncSelect<Sample1>("Score1", limit = 7)
+    let! data = client.AsyncSelect<Sample1>("SampleTable", orderBy = "Score1", limit = 7)
     for x in data do
       printfn "%A" x
   } |> Async.RunSynchronously

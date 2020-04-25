@@ -20,7 +20,11 @@ type Model.Select with
       this.orderBy |> function
       | ValueSome x when x = IdKey || tableMap.ContainsKey x ->
           sprintf "order by %s %s" x
-            (this.isDescending |> function | true -> "desc" | _ -> "asc")
+            (this.isDescending
+              |> function
+              | ValueSome false -> "asc"
+              | _ -> "desc"
+            )
       | _ -> ""
 
     let limit =
@@ -43,7 +47,7 @@ let private createTableSql (table: string) (keys: seq<string * Model.TableType>)
     )
   for key, ty in keys do
     sb.Append(sprintf ", [%s] %A not null" key ty) |> ignore
-  
+
   sb.Append(")").ToString()
 
 
@@ -54,7 +58,7 @@ let createTables (connStr: string) (tables: Map<string, Model.TableConfig>) =
 
   try
     for (tableName, tableConfig) in Map.toSeq tables do
-      let sql = createTableSql tableName (Map.toSeq tableConfig.keys)
+      let sql = createTableSql tableName (Map.toSeq tableConfig)
       connection.Execute(sql, trans) |> ignore
 
     trans.Commit()
@@ -64,7 +68,7 @@ let createTables (connStr: string) (tables: Map<string, Model.TableConfig>) =
 
 open System.Collections.Concurrent
 
-let insert (connStr: string) tableName (tableMap: Map<string, Model.TableType>) (utcDate: DateTime) (data: Model.Insert) : int64 =
+let insert (connStr: string) tableName (tableMap: Model.TableConfig) (utcDate: DateTime) (data: Model.Insert) : int64 =
   let keys = [| for (k, _) in tableMap |> Map.toSeq -> k |]
 
   let sql =
@@ -101,7 +105,7 @@ let insert (connStr: string) tableName (tableMap: Map<string, Model.TableType>) 
 
 let private selectTableMapMemo = ConcurrentDictionary<Model.Select, string>()
 
-let select (connStr : string) (tableMap: Map<string, Model.TableType>) (data: Model.Select) : Model.Record[] =
+let select (connStr : string) (tableMap: Model.TableConfig) (data: Model.Select) : Model.Record[] =
   let sql =
     selectTableMapMemo.TryGetValue(data) |> function
     | true, x -> x

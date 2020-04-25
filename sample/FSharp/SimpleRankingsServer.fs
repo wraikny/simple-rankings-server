@@ -26,19 +26,16 @@ type Data<'a> = {
   utcDate : DateTime
 }
 
-#if !DEBUG
-[<EditorBrowsable(EditorBrowsableState.Never)>]
-#endif
-type InsertParam<'a> = {
-  userId : Guid
-  values : 'a
-}
+module Internal =
+  type InsertParam<'a> = {
+    table : string
+    userId : Guid
+    values : 'a
+  }
 
-#if !DEBUG
-[<EditorBrowsable(EditorBrowsableState.Never)>]
-#endif
-type InsertResult = { id : int64 }
+  type InsertResult = { id : int64 }
 
+open Internal
 
 let private jsonConfig = JsonConfig.create(allowUntyped = true)
 
@@ -52,9 +49,9 @@ type Client(url : string, usrename, password) =
   interface IDisposable with
     member __.Dispose() = client.Dispose()
 
-  member __.AsyncInsert (userId, data) : Async<int64> =
+  member __.AsyncInsert (tableName, userId, data) : Async<int64> =
     async {
-      let json = Json.serializeEx jsonConfig { userId = userId; values = data }
+      let json = Json.serializeEx jsonConfig { table = tableName; userId = userId; values = data }
       use content = new StringContent(json, Encoding.UTF8, @"application/json")
 
       let! result = client.PostAsync(url, content) |> Async.AwaitTask
@@ -66,12 +63,13 @@ type Client(url : string, usrename, password) =
         return failwithf "%A:%s" result.StatusCode resString
     }
 
-  member __.AsyncSelect (?orderBy : string, ?isDescending : bool, ?limit : int) : Async<Data<'a>[]> =
+  member __.AsyncSelect (tableName: string, ?orderBy : string, ?isDescending : bool, ?limit : int) : Async<Data<'a>[]> =
     async {
       let param = Dictionary<string, string>()
       let inline add s x =
         x |> Option.iter(fun y -> param.Add(s, y.ToString()))
 
+      param.Add("table", tableName)
       orderBy |> add "orderBy"
       isDescending |> add "isDescending"
       limit |> add "limit"
