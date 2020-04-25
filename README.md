@@ -11,6 +11,11 @@ simple-rankings-server is distributed under MIT License.
 |AppVeyor|[![](https://ci.appveyor.com/api/projects/status/5vtyb8v9twdpteb6?svg=true)](https://ci.appveyor.com/project/wraikny/simple-rankings-server)|
 --->
 
+## How to Use
+1. Write [config.json](config.json).
+
+You can see C#, F# samples in [sample](./sample).
+
 ## Libraries
 
 - [System.Data.SQLite](https://system.data.sqlite.org/index.html),[Microsoft Public License](https://opensource.org/licenses/ms-pl)
