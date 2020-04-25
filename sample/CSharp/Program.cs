@@ -14,11 +14,6 @@ namespace CSharp
             public double Score2 { get; set; }
             [DataMember]
             public string Name { get; set; }
-
-            public override string ToString()
-            {
-                return $"{{ \"Score1\" : {Score1}, \"Score2\" : {Score2}, \"Name\" : {Name} }}";
-            }
         }
 
         const string Url = @"http://localhost:8080/api/SampleDB";
@@ -49,8 +44,6 @@ namespace CSharp
             }
 
             Console.ReadLine();
-
-            client.Dispose();
         }
     }
 }

@@ -42,7 +42,7 @@ namespace SimpleRankingsServer
 
         public override string ToString()
         {
-            return $"{{ \"id\" : {Id}, \"userId\" : {userId}, \"utcDate\" : {utcDate}, \"values\" : {Values} }}";
+            return JsonUtils.Serialize(this);
         }
     }
 
@@ -92,24 +92,10 @@ namespace SimpleRankingsServer
             public string Table { get; set; }
 
             [DataMember(Name = "userId")]
-            public string UserIdStr { get; set; }
+            public string UserId { get; set; }
 
             [DataMember(Name = "values")]
             public T Values { get; set; }
-
-            [IgnoreDataMember]
-            private Guid userId;
-
-            [IgnoreDataMember]
-            public Guid UserId
-            {
-                get => userId;
-                set
-                {
-                    userId = value;
-                    UserIdStr = value.ToString();
-                }
-            }
         }
 
         [DataContract]
@@ -121,7 +107,7 @@ namespace SimpleRankingsServer
 
         public async Task<long> InsertAsync<T>(string tableName, Guid userId, T data)
         {
-            var json = JsonUtils.Serialize(new InsertParam<T> { Table = tableName, UserId = userId, Values = data });
+            var json = JsonUtils.Serialize(new InsertParam<T> { Table = tableName, UserId = userId.ToString(), Values = data });
             using (var content = new StringContent(json, Encoding.UTF8, @"application/json"))
             {
                 var result = await client.PostAsync(url, content);
@@ -136,10 +122,10 @@ namespace SimpleRankingsServer
             }
         }
 
-        public async Task<IReadOnlyList<Data<T>>> SelectAsync<T>(string table, string orderBy = null, bool isDescending = true, int limit = 100)
+        public async Task<Data<T>[]> SelectAsync<T>(string tableName, string orderBy = null, bool isDescending = true, int limit = 100)
         {
             var param = new Dictionary<string, string>();
-            param.Add("table", table);
+            param.Add("table", tableName);
             param.Add("isDescending", isDescending.ToString());
             param.Add("limit", limit.ToString());
             if (orderBy != null) param.Add("orderBy", orderBy);
