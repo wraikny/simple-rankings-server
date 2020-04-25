@@ -1,13 +1,13 @@
 {
     "readme": [
-        "1. Don't use sample table name",
-        "2. Don't use 'Id' and 'UserId' and 'Date' key",
-        "3. Available type is (Int | Float | Text)",
-        "4. Never change the setting of table which has already been created",
+        "1. Don't use same table name",
+        "2. Don't use 'Id', 'UserId' or 'Date' as key",
+        "3. Available type is 'Int', 'Float' or 'Text'",
+        "4. Never change the setting of table which has been created once",
 
         "1. 同じテーブル名を使用しないでください",
-        "2. 'Id'または'UserId'または'Date'をキーの名前として用いないでください",
-        "3. 利用可能なデータ型は (Int | Float | Text) です",
+        "2. 'Id','UserId','Date'をキーの名前として用いないでください",
+        "3. 利用可能なデータ型は'Int','Float','Text'です",
         "4. 一度作成したテーブルの設定は変更しないでください"
     ],
 
@@ -17,9 +17,9 @@
 
     "tables": {
         "Sample1": {
-            "username" : "sample",
+            "username": "sample",
             "password": "sample",
-            "keys" : {
+            "keys": {
                 "Score1": "Int",
                 "Score2": "Float",
                 "Name": "Text"
