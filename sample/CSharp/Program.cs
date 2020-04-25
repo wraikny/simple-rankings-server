@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Runtime.Serialization;
 
 namespace CSharp
@@ -26,18 +27,18 @@ namespace CSharp
         // PlayerのGuidはファイルなどに保存しておく
         static Guid userId = Guid.NewGuid();
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             // insertするデータを作成
             var sample = new Sample1 { Score1 = 118, Score2 = 204.6, Name = "kitsune" };
 
             // データベースに追加
             // 追加したデータのidを取得
-            var result = client.InsertAsync("SampleTable", userId, sample).Result;
+            var result = await client.InsertAsync("SampleTable", userId, sample);
             Console.WriteLine(result);
 
             // データベースから取得
-            var data = client.SelectAsync<Sample1>("SampleTable", orderBy: "Id", limit: 2).Result;
+            var data = await client.SelectAsync<Sample1>("SampleTable", orderBy: "Id", limit: 2);
             foreach (var x in data)
             {
                 Console.WriteLine(x);
