@@ -14,25 +14,24 @@ let [<Literal>] IdKey = "Id"
 let [<Literal>] UserIdKey = "UserId"
 let [<Literal>] UTCDateKey = "UTCDate"
 
-type Model.Select with
-  member this.ToSql(tableMap : Map<_,_>) =
-    let orderBy =
-      this.orderBy |> function
-      | ValueSome x when x = IdKey || tableMap.ContainsKey x ->
-          sprintf "order by %s %s" x
-            (this.isDescending
-              |> function
-              | ValueSome false -> "asc"
-              | _ -> "desc"
-            )
-      | _ -> ""
+let selectSql (tableMap: Model.TableConfig) (data: Model.Select) =
+  let orderBy =
+    data.orderBy |> function
+    | ValueSome x when x = IdKey || tableMap.ContainsKey x ->
+        sprintf "order by %s %s" x
+          (data.isDescending
+            |> function
+            | ValueSome false -> "asc"
+            | _ -> "desc"
+          )
+    | _ -> ""
 
-    let limit =
-      this.limit
-      |> ValueOption.map (sprintf "limit %d")
-      |> ValueOption.defaultValue ""
-    
-    sprintf "select * from %s %s %s" this.table orderBy limit
+  let limit =
+    data.limit
+    |> ValueOption.map (sprintf "limit %d")
+    |> ValueOption.defaultValue ""
+
+  sprintf "select * from %s %s %s" data.table orderBy limit
 
 let private createTableSql (table: string) (keys: seq<string * Model.TableType>) =
   let sb = 
@@ -110,7 +109,7 @@ let select (connStr : string) (tableMap: Model.TableConfig) (data: Model.Select)
     selectTableMapMemo.TryGetValue(data) |> function
     | true, x -> x
     | _ ->
-      let sql = data.ToSql(tableMap)
+      let sql = selectSql tableMap data
       selectTableMapMemo.TryAdd(data, sql) |> ignore
       sql
 
