@@ -8,12 +8,14 @@ open System.Net.Http.Headers
 open FSharp.Json
 open System.ComponentModel
 
+let private jsonConfig = JsonConfig.create(allowUntyped = true)
+
 type DateTimeString() =
   interface ITypeTransform with
     member __.targetType() = (fun _ -> typeof<string>) ()
     member __.toTargetType value = (fun (v: obj) ->
       (v :?> DateTime).ToString "yyyy/MM/dd HH:mm:ss" :> obj) value
-    
+
     member __.fromTargetType value = (fun (v: obj) ->
       DateTime.ParseExact(v:?> string, "yyyy/MM/dd HH:mm:ss", null) :> obj) value
 
@@ -24,7 +26,9 @@ type Data<'a> = {
 
   [<JsonField(Transform=typeof<DateTimeString>)>]
   utcDate : DateTime
-}
+} with
+  override x.ToString() =
+    Json.serializeEx jsonConfig x
 
 module Internal =
   type InsertParam<'a> = {
@@ -36,8 +40,6 @@ module Internal =
   type InsertResult = { id : int64 }
 
 open Internal
-
-let private jsonConfig = JsonConfig.create(allowUntyped = true)
 
 type Client(url : string, usrename, password) =
   let client = new HttpClient()
