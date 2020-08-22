@@ -49,7 +49,22 @@ Target.create "Build" (fun _ ->
 )
 
 Target.create "Publish" (fun _ ->
-  dotnet "publish" "src/SimpleRankingsServer -c Release -r linux-x64 -o publish/linux-x64 -p:PublishSingleFile=true -p:PublishTrimmed=true"
+  "src/SimpleRankingsServer/SimpleRankingsServer.fsproj"
+  |> DotNet.publish (fun p ->
+    { p with
+        Runtime = Some "linux-x64"
+        Configuration = DotNet.BuildConfiguration.Release
+        SelfContained = Some true
+        MSBuildParams = {
+          p.MSBuildParams with
+            Properties =
+              ("PublishSingleFile", "true")
+              :: ("PublishTrimmed", "true")
+              :: p.MSBuildParams.Properties
+        }
+        OutputPath = "publish/linux-x64" |> Some
+    }
+  )
 )
 
 Target.create "All" ignore

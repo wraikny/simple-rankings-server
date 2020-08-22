@@ -51,10 +51,4 @@ type Insert = {
   values : Map<string, obj>
 }
 
-// type Insert = {
-//   table : string
-//   userId : string
-//   values : Map<string, obj>
-// }
-
 type InsertResult = { id : int64 }
